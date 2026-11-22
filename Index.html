@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malik Data Lookup</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #172033;
+}
+header {
+    background: #102c50;
+    color: white;
+    text-align: center;
+    padding: 25px 10px;
+}
+header h1 {
+    margin: 0;
+    font-size: 27px;
+}
+.container {
+    max-width: 650px;
+    margin: 25px auto;
+    padding: 15px;
+}
+.box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #0001;
+    margin-bottom: 18px;
+}
+h2 {
+    color: #102c50;
+    font-size: 19px;
+}
+textarea, input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    font-size: 16px;
+}
+button {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 7px;
+    background: #126bdb;
+    color: white;
+    font-size: 15px;
+    margin: 5px 2px;
+}
+.result {
+    background: #f0f7ff;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 7px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Malik Data Lookup</h1>
+<p>Simple Record Management System</p>
+</header>
+
+<div class="container">
+
+<div class="box">
+<h2>ریکارڈ شامل کریں</h2>
+<p>صرف اپنے مجاز ریکارڈ درج کریں۔ ہر لائن میں ID اور تفصیل لکھیں۔</p>
+
+<textarea id="data" rows="5"
+placeholder="ID | Detail
+1001 | Example Record 1
+1002 | Example Record 2"></textarea>
+
+<button onclick="saveData()">ریکارڈ محفوظ کریں</button>
+</div>
+
+<div class="box">
+<h2>Single Search</h2>
+
+<input id="single" placeholder="ایک ID لکھیں">
+
+<button onclick="singleSearch()">Search</button>
+
+<div id="singleResult" class="result"></div>
+</div>
+
+<div class="box">
+<h2>Bulk Search</h2>
+
+<textarea id="bulk" rows="5"
+placeholder="ہر لائن میں ایک ID لکھیں"></textarea>
+
+<button onclick="bulkSearch()">Bulk Search</button>
+<button onclick="copyResult()">Copy All</button>
+<button onclick="downloadPDF()">Save PDF</button>
+
+<div id="bulkResult" class="result"></div>
+</div>
+
+</div>
+
+<footer>
+Malik Data Lookup © 2026
+</footer>
+
+<script>
+
+let records = [];
+
+function saveData() {
+    let lines = document.getElementById("data").value.split("\n");
+
+    records = lines.map(line => {
+        let parts = line.split("|");
+        return {
+            id: (parts[0] || "").trim(),
+            detail: (parts[1] || "").trim()
+        };
+    }).filter(r => r.id && r.detail);
+
+    alert("Records saved successfully!");
+}
+
+function singleSearch() {
+    let id = document.getElementById("single").value.trim();
+
+    let found = records.find(r => r.id === id);
+
+    document.getElementById("singleResult").textContent =
+        found ? found.id + " | " + found.detail : "Record not found";
+}
+
+function bulkSearch() {
+    let ids = document.getElementById("bulk").value
+        .split("\n")
+        .map(x => x.trim())
+        .filter(Boolean);
+
+    let output = ids.map(id => {
+        let found = records.find(r => r.id === id);
+        return found ? found.id + " | " + found.detail
+                     : id + " | Not Found";
+    });
+
+    document.getElementById("bulkResult").textContent =
+        output.join("\n");
+}
+
+function copyResult() {
+    let text = document.getElementById("bulkResult").textContent;
+
+    navigator.clipboard.writeText(text)
+        .then(() => alert("Copied successfully!"))
+        .catch(() => alert("Please select and copy the results."));
+}
+
+function downloadPDF() {
+    let content = document.getElementById("bulkResult").textContent;
+
+    if (!content.trim()) {
+        alert("Please search records first.");
+        return;
+    }
+
+    let win = window.open("", "_blank");
+
+    win.document.write(`
+        <html>
+        <head><title>Malik Data Lookup</title></head>
+        <body>
+        <h2>Malik Data Lookup Results</h2>
+        <pre>${content.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</pre>
+        <script>
+        window.onload = function(){ window.print(); };
+        <\/script>
+        </body>
+        </html>
+    `);
+
+    win.document.close();
+}
+
+</script>
+
+</body>
+</html>
